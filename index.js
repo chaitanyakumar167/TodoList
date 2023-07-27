@@ -4,20 +4,22 @@ const submit = document.getElementById("submit");
 const pending = document.getElementById("pending");
 const completed = document.getElementById("completed");
 const url =
-  "https://crudcrud.com/api/26eee517594d49a7bc250212c03d425d/todoList";
+  "https://crudcrud.com/api/c5b4c865ad5148798b74d1b4197eff5c/todoList";
 
-submit.addEventListener("click", (e) => {
+submit.addEventListener("click", showPost);
+async function showPost(e) {
   e.preventDefault();
   let obj = {
     todoName: todoName.value,
     description: description.value,
   };
-  axios
-    .post(url, obj)
-    .then((res) => (obj._id = res.data._id))
-    .catch((err) => console.log(err));
+
+  let res = await axios.post(url, obj).catch((err) => console.log(err));
+  if (res) {
+    obj._id = res.data._id;
+  }
   showTodo(obj);
-});
+}
 
 function showTodo(obj) {
   let li = document.createElement("li");
@@ -29,29 +31,22 @@ function showTodo(obj) {
   done.textContent = "✔";
   del.textContent = "X";
 
-  del.onclick = () => {
+  del.onclick = async function () {
     let id = obj._id;
-    axios
-      .delete(`${url}/${id}`)
-      .then((res) => {})
-      .catch((err) => console.log(err));
+    await axios.delete(`${url}/${id}`).catch((err) => console.log(err));
     pending.removeChild(li);
   };
 
-  done.onclick = () => {
+  done.onclick = async function () {
     let completedLi = li;
     let id = obj._id;
     delete obj._id;
-    axios
-      .delete(`${url}/${id}`)
-      .then((res) => {})
-      .catch((err) => console.log(err));
-    axios
+    await axios.delete(`${url}/${id}`).catch((err) => console.log(err));
+    await axios
       .post(
-        "https://crudcrud.com/api/26eee517594d49a7bc250212c03d425d/completed",
+        "https://crudcrud.com/api/c5b4c865ad5148798b74d1b4197eff5c/completed",
         obj
       )
-      .then((res) => console.log(res))
       .catch((err) => console.log(err));
 
     pending.removeChild(li);
@@ -66,17 +61,15 @@ function showTodo(obj) {
 
   pending.appendChild(li);
 }
-function showAllTodos() {
+async function showAllTodos() {
   pending.innerHTML = "";
-  axios
-    .get(url)
-    .then((res) => {
-      const data = res.data;
-      for (let i = 0; i < data.length; i++) {
-        showTodo(data[i]);
-      }
-    })
-    .catch((err) => console.log(err));
+  let res = await axios.get(url).catch((err) => console.log(err));
+  if (res) {
+    const data = res.data;
+    for (let i = 0; i < data.length; i++) {
+      showTodo(data[i]);
+    }
+  }
 }
 
 window.addEventListener("DOMContentLoaded", showAllTodos);
@@ -89,15 +82,16 @@ function showCompletedTodo(obj) {
 
   completed.appendChild(li);
 }
-function showAllCompletedTodos() {
+
+async function showAllCompletedTodos() {
   pending.innerHTML = "";
-  axios
-    .get("https://crudcrud.com/api/26eee517594d49a7bc250212c03d425d/completed")
-    .then((res) => {
-      const data = res.data;
-      for (let i = 0; i < data.length; i++) {
-        showCompletedTodo(data[i]);
-      }
-    })
+  let res = await axios
+    .get("https://crudcrud.com/api/c5b4c865ad5148798b74d1b4197eff5c/completed")
     .catch((err) => console.log(err));
+  if (res) {
+    const data = res.data;
+    for (let i = 0; i < data.length; i++) {
+      showCompletedTodo(data[i]);
+    }
+  }
 }
